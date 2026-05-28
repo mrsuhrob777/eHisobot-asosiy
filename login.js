@@ -1,4 +1,7 @@
-// ==================== PROFESSIONAL LOGIN SYSTEM ====================
+// ==================== LOGIN PAGE ====================
+
+// Redirect if already authenticated
+auth.redirectIfAuthenticated();
 
 // DOM Elements
 const loginForm = document.getElementById('loginForm');
@@ -6,42 +9,11 @@ const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const togglePasswordBtn = document.getElementById('togglePassword');
 const loginBtn = document.getElementById('loginBtn');
-const toast = document.getElementById('toast');
-const toastMessage = document.getElementById('toastMessage');
 const emailError = document.getElementById('emailError');
 const passwordError = document.getElementById('passwordError');
-
-// ==================== VALIDATION FUNCTIONS ====================
-
-function validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-function validatePassword(password) {
-    return password.length >= 6;
-}
-
-function showError(errorElement, message) {
-    errorElement.textContent = message;
-    errorElement.parentElement.querySelector('input').classList.add('shake');
-    setTimeout(() => {
-        errorElement.parentElement.querySelector('input').classList.remove('shake');
-    }, 300);
-}
-
-function clearError(errorElement) {
-    errorElement.textContent = '';
-}
-
-function showToast(message, type = 'success') {
-    toastMessage.textContent = message;
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
+const googleLoginBtn = document.getElementById('googleLoginBtn');
+const microsoftLoginBtn = document.getElementById('microsoftLoginBtn');
+const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 
 // ==================== PASSWORD TOGGLE ====================
 
@@ -59,7 +31,7 @@ togglePasswordBtn.addEventListener('click', () => {
     }
 });
 
-// ==================== REAL-TIME VALIDATION ====================
+// ==================== VALIDATION ====================
 
 emailInput.addEventListener('input', () => {
     clearError(emailError);
@@ -94,7 +66,7 @@ passwordInput.addEventListener('blur', () => {
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Clear previous errors
+    // Clear errors
     clearError(emailError);
     clearError(passwordError);
     
@@ -103,7 +75,7 @@ loginForm.addEventListener('submit', async (e) => {
     
     let hasError = false;
     
-    // Validate email
+    // Validate
     if (!email) {
         showError(emailError, 'Email manzilni kiriting');
         hasError = true;
@@ -112,7 +84,6 @@ loginForm.addEventListener('submit', async (e) => {
         hasError = true;
     }
     
-    // Validate password
     if (!password) {
         showError(passwordError, 'Parolni kiriting');
         hasError = true;
@@ -121,20 +92,16 @@ loginForm.addEventListener('submit', async (e) => {
         hasError = true;
     }
     
-    if (hasError) {
-        return;
-    }
+    if (hasError) return;
     
-    // Show loading state
+    // Show loading
     loginBtn.classList.add('loading');
     loginBtn.disabled = true;
     
     try {
-        // Simulate API call
-        await simulateLogin(email, password);
+        await auth.login(email, password);
         
-        // Success
-        showToast('Muvaffaqiyatli kirildi!');
+        showToast('Muvaffaqiyatli kirildi!', 'success');
         
         // Save email if remember me is checked
         const rememberCheckbox = document.getElementById('remember');
@@ -144,52 +111,72 @@ loginForm.addEventListener('submit', async (e) => {
             localStorage.removeItem('rememberedEmail');
         }
         
-        // Redirect after 1.5 seconds (in real app)
+        // Redirect to dashboard
         setTimeout(() => {
-            console.log('Redirecting to dashboard...');
-            // window.location.href = '/dashboard';
-        }, 1500);
+            window.location.href = 'dashboard.html';
+        }, 1000);
         
     } catch (error) {
-        showError(passwordError, 'Email yoki parol noto\'g\'ri');
-        showToast('Kirish xato', 'error');
-    } finally {
-        setTimeout(() => {
-            loginBtn.classList.remove('loading');
-            loginBtn.disabled = false;
-        }, 1500);
+        showError(passwordError, error.message);
+        showToast(error.message, 'error');
+        
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
     }
 });
 
-// ==================== SIMULATE API CALL ====================
-
-function simulateLogin(email, password) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            // Demo: accept any valid email and password >= 6 chars
-            if (validateEmail(email) && validatePassword(password)) {
-                resolve({ user: { email } });
-            } else {
-                reject(new Error('Invalid credentials'));
-            }
-        }, 1500);
-    });
-}
-
 // ==================== SOCIAL LOGIN ====================
 
-const socialButtons = document.querySelectorAll('.btn-social');
-
-socialButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-        e.preventDefault();
+googleLoginBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    googleLoginBtn.classList.add('loading');
+    googleLoginBtn.disabled = true;
+    
+    try {
+        await auth.googleSignIn();
+        showToast('Google orqali muvaffaqiyatli kirildi!', 'success');
         
-        const provider = button.textContent.trim();
-        showToast(`${provider} orqali kirish tez orada qo'shiladi`, 'info');
-    });
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1000);
+        
+    } catch (error) {
+        showToast('Google orqali kirish xato', 'error');
+        googleLoginBtn.classList.remove('loading');
+        googleLoginBtn.disabled = false;
+    }
 });
 
-// ==================== REMEMBER ME FUNCTIONALITY ====================
+microsoftLoginBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    microsoftLoginBtn.classList.add('loading');
+    microsoftLoginBtn.disabled = true;
+    
+    try {
+        await auth.microsoftSignIn();
+        showToast('Microsoft orqali muvaffaqiyatli kirildi!', 'success');
+        
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1000);
+        
+    } catch (error) {
+        showToast('Microsoft orqali kirish xato', 'error');
+        microsoftLoginBtn.classList.remove('loading');
+        microsoftLoginBtn.disabled = false;
+    }
+});
+
+// ==================== FORGOT PASSWORD ====================
+
+forgotPasswordLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    showToast('Parolni tiklash funksiyasi tez orada qo\'shiladi', 'info');
+});
+
+// ==================== REMEMBER ME ====================
 
 window.addEventListener('DOMContentLoaded', () => {
     const savedEmail = localStorage.getItem('rememberedEmail');
@@ -199,35 +186,21 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('remember').checked = true;
     }
     
-    // Auto-focus email input
+    // Auto-focus
     setTimeout(() => {
-        emailInput.focus();
+        if (!emailInput.value) {
+            emailInput.focus();
+        } else {
+            passwordInput.focus();
+        }
     }, 300);
 });
 
 // ==================== KEYBOARD SHORTCUTS ====================
 
 document.addEventListener('keydown', (e) => {
-    // Enter on email field -> focus password
     if (e.key === 'Enter' && document.activeElement === emailInput) {
         e.preventDefault();
         passwordInput.focus();
     }
 });
-
-// ==================== PREVENT FORM RESUBMISSION ====================
-
-window.addEventListener('pageshow', (e) => {
-    if (e.persisted) {
-        loginBtn.classList.remove('loading');
-        loginBtn.disabled = false;
-    }
-});
-
-// ==================== CONSOLE INFO ====================
-
-console.log('%c🔐 eHisobot Login System', 'color: #2563eb; font-size: 18px; font-weight: bold;');
-console.log('%cProfessional Business Login Interface', 'color: #64748b; font-size: 12px;');
-console.log('%c\nDemo Credentials:', 'color: #10b981; font-size: 14px; font-weight: bold;');
-console.log('Email: any valid email format');
-console.log('Password: minimum 6 characters');

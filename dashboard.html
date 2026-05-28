@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eHisobot - Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+                    <rect width="48" height="48" rx="10" fill="#2563eb"/>
+                    <path d="M24 14L34 20V28L24 34L14 28V20L24 14Z" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M24 24L34 20M24 24L14 20M24 24V34" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+                </svg>
+                <span>eHisobot</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Bosh sahifa</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Hisobotlar</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Hisob-fakturalar</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Mijozlar</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-wallet"></i>
+                <span>Moliya</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Sozlamalar</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Chiqish</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Bosh sahifa</h1>
+                <p class="greeting" id="greeting">Xush kelibsiz!</p>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" title="Bildirishnomalar">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <div class="user-menu" id="userMenu">
+                    <img src="https://ui-avatars.com/api/?name=User&background=2563eb&color=fff" alt="User" class="user-avatar" id="userAvatar">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Foydalanuvchi</span>
+                        <span class="user-email" id="userEmail">user@email.uz</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard content -->
+        <div class="dashboard-content">
+            <!-- Stats cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Jami daromad</span>
+                        <h3 class="stat-value">45,231,000 so'm</h3>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> +12.5%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Hisob-fakturalar</span>
+                        <h3 class="stat-value">1,234</h3>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> +8.2%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Mijozlar</span>
+                        <h3 class="stat-value">567</h3>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> +3.1%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">To'lanmagan</span>
+                        <h3 class="stat-value">12</h3>
+                        <span class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i> -2.4%
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent activity & quick actions -->
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>So'nggi faollik</h3>
+                        <a href="#" class="link-sm">Barchasini ko'rish</a>
+                    </div>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon blue">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p class="activity-title">Yangi hisob-faktura yaratildi</p>
+                                <span class="activity-time">5 daqiqa oldin</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon green">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p class="activity-title">To'lov qabul qilindi</p>
+                                <span class="activity-time">1 soat oldin</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon orange">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-info">
+                                <p class="activity-title">Yangi mijoz qo'shildi</p>
+                                <span class="activity-time">2 soat oldin</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Tez harakatlar</h3>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="action-btn">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Yangi hisob-faktura</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Mijoz qo'shish</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-file-export"></i>
+                            <span>Hisobot eksport</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-cog"></i>
+                            <span>Sozlamalar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
