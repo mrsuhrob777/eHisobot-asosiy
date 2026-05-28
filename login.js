@@ -134,12 +134,44 @@ googleLoginBtn.addEventListener('click', async (e) => {
     googleLoginBtn.disabled = true;
     
     try {
-        await auth.googleSignIn();
-        showToast('Google orqali muvaffaqiyatli kirildi!', 'success');
+        // Listen for popup message
+        const handleMessage = (event) => {
+            if (event.data.type === 'google-signin') {
+                const { name, email } = event.data.user;
+                
+                // Create user object
+                const googleUser = {
+                    id: 'google_' + Date.now(),
+                    fullName: name,
+                    email: email,
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4285F4&color=fff`,
+                    provider: 'google',
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Save user
+                const usersDB = auth.getUsersDB();
+                if (!usersDB[email]) {
+                    usersDB[email] = googleUser;
+                    auth.saveUsersDB(usersDB);
+                }
+                
+                auth.setCurrentUser(googleUser);
+                showToast('Google orqali muvaffaqiyatli kirildi!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+                
+                // Remove listener
+                window.removeEventListener('message', handleMessage);
+            }
+        };
         
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1000);
+        window.addEventListener('message', handleMessage);
+        
+        // Open Google Sign-In popup
+        await auth.googleSignIn();
         
     } catch (error) {
         showToast('Google orqali kirish xato', 'error');

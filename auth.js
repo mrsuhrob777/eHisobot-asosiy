@@ -1,7 +1,7 @@
 // ==================== AUTHENTICATION SYSTEM ====================
 
-// Google OAuth Configuration (Demo - replace with real credentials)
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+// Google OAuth Configuration
+const GOOGLE_CLIENT_ID = '1234567890-abcdefghijklmnop.apps.googleusercontent.com'; // Demo ID
 
 // ==================== LOCAL STORAGE KEYS ====================
 const STORAGE_KEYS = {
@@ -14,20 +14,23 @@ const STORAGE_KEYS = {
 class AuthSystem {
     constructor() {
         this.currentUser = this.getCurrentUser();
+        this.googleUser = null;
         this.initGoogleSignIn();
     }
 
     // Initialize Google Sign-In
     initGoogleSignIn() {
-        // Load Google Sign-In API
-        if (typeof gapi !== 'undefined') {
-            gapi.load('auth2', () => {
-                gapi.auth2.init({
-                    client_id: GOOGLE_CLIENT_ID,
-                    scope: 'profile email'
-                });
-            });
-        }
+        // Load Google Identity Services
+        this.loadGoogleScript();
+    }
+
+    // Load Google Sign-In script
+    loadGoogleScript() {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
     }
 
     // Register new user
@@ -99,32 +102,259 @@ class AuthSystem {
         });
     }
 
-    // Google Sign-In
+    // Google Sign-In with popup
     async googleSignIn() {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                // Simulate Google OAuth
-                const mockGoogleUser = {
-                    id: 'google_' + Date.now(),
-                    fullName: 'Google User',
-                    email: 'user@gmail.com',
-                    avatar: 'https://ui-avatars.com/api/?name=Google+User&background=4285F4&color=fff',
-                    provider: 'google',
-                    createdAt: new Date().toISOString()
-                };
+            try {
+                // Create Google Sign-In popup simulation
+                const popup = this.createGooglePopup();
                 
-                const usersDB = this.getUsersDB();
+                // Simulate Google account selection
+                setTimeout(() => {
+                    popup.close();
+                    
+                    // Simulate successful Google sign-in
+                    const mockGoogleUser = {
+                        id: 'google_' + Date.now(),
+                        fullName: 'Google User',
+                        email: 'user@gmail.com',
+                        avatar: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+                        provider: 'google',
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    const usersDB = this.getUsersDB();
+                    
+                    // Check if user exists
+                    if (!usersDB[mockGoogleUser.email]) {
+                        usersDB[mockGoogleUser.email] = mockGoogleUser;
+                        this.saveUsersDB(usersDB);
+                    }
+                    
+                    this.setCurrentUser(mockGoogleUser);
+                    resolve(mockGoogleUser);
+                }, 2000);
                 
-                // Check if user exists
-                if (!usersDB[mockGoogleUser.email]) {
-                    usersDB[mockGoogleUser.email] = mockGoogleUser;
-                    this.saveUsersDB(usersDB);
-                }
-                
-                this.setCurrentUser(mockGoogleUser);
-                resolve(mockGoogleUser);
-            }, 1500);
+            } catch (error) {
+                reject(error);
+            }
         });
+    }
+
+    // Create Google Sign-In popup
+    createGooglePopup() {
+        const width = 500;
+        const height = 600;
+        const left = (screen.width / 2) - (width / 2);
+        const top = (screen.height / 2) - (height / 2);
+        
+        // Create popup window
+        const popup = window.open(
+            'about:blank',
+            'Google Sign-In',
+            `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes`
+        );
+        
+        if (popup) {
+            // Create Google-like popup content
+            popup.document.write(`
+                <!DOCTYPE html>
+                <html lang="uz">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Google orqali kirish</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        body {
+                            font-family: 'Google Sans', Roboto, Arial, sans-serif;
+                            background: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 100vh;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 450px;
+                            text-align: center;
+                        }
+                        .logo {
+                            margin-bottom: 20px;
+                        }
+                        .logo svg {
+                            width: 75px;
+                            height: 24px;
+                        }
+                        h1 {
+                            font-size: 24px;
+                            font-weight: 400;
+                            color: #202124;
+                            margin-bottom: 10px;
+                        }
+                        p {
+                            font-size: 14px;
+                            color: #5f6368;
+                            margin-bottom: 30px;
+                        }
+                        .accounts {
+                            border: 1px solid #dadce0;
+                            border-radius: 8px;
+                            overflow: hidden;
+                        }
+                        .account {
+                            padding: 16px;
+                            display: flex;
+                            align-items: center;
+                            gap: 16px;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                            text-align: left;
+                        }
+                        .account:hover {
+                            background: #f8f9fa;
+                        }
+                        .account + .account {
+                            border-top: 1px solid #dadce0;
+                        }
+                        .avatar {
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            background: #4285f4;
+                            color: white;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 18px;
+                            font-weight: 500;
+                        }
+                        .info {
+                            flex: 1;
+                        }
+                        .name {
+                            font-size: 14px;
+                            color: #202124;
+                            font-weight: 500;
+                            margin-bottom: 2px;
+                        }
+                        .email {
+                            font-size: 12px;
+                            color: #5f6368;
+                        }
+                        .add-account {
+                            display: flex;
+                            align-items: center;
+                            gap: 16px;
+                            padding: 16px;
+                            color: #1a73e8;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                            border-top: 1px solid #dadce0;
+                        }
+                        .add-account:hover {
+                            background: #f8f9fa;
+                        }
+                        .add-icon {
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            border: 2px solid #dadce0;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 24px;
+                        }
+                        .spinner {
+                            display: inline-block;
+                            width: 24px;
+                            height: 24px;
+                            border: 3px solid #f3f3f3;
+                            border-top: 3px solid #4285f4;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                            margin: 20px auto;
+                        }
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                        .loading-text {
+                            font-size: 14px;
+                            color: #5f6368;
+                            margin-top: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="logo">
+                            <svg viewBox="0 0 75 24" xmlns="http://www.w3.org/2000/svg">
+                                <g fill="none" fill-rule="evenodd">
+                                    <path d="M10.73 0c-2.42 0-4.42 2-4.42 4.42v15.16c0 2.42 2 4.42 4.42 4.42h15.16c2.42 0 4.42-2 4.42-4.42V4.42C30.31 2 28.31 0 25.89 0H10.73zm14.05 12.47l-6.52 6.52c-.73.73-1.92.73-2.65 0l-3.26-3.26c-.73-.73-.73-1.92 0-2.65.73-.73 1.92-.73 2.65 0l1.94 1.94 5.19-5.19c.73-.73 1.92-.73 2.65 0 .73.73.73 1.92 0 2.64z" fill="#4285F4"/>
+                                    <text font-family="Google Sans, Roboto, Arial, sans-serif" font-size="18" fill="#5f6368" x="35" y="18">Google</text>
+                                </g>
+                            </svg>
+                        </div>
+                        <h1>Hisobni tanlang</h1>
+                        <p>eHisobot tizimiga kirish uchun</p>
+                        
+                        <div class="accounts" id="accounts" style="display:block">
+                            <div class="account" onclick="selectAccount('Demo User', 'demo@gmail.com')">
+                                <div class="avatar">D</div>
+                                <div class="info">
+                                    <div class="name">Demo User</div>
+                                    <div class="email">demo@gmail.com</div>
+                                </div>
+                            </div>
+                            <div class="account" onclick="selectAccount('Test User', 'test@gmail.com')">
+                                <div class="avatar">T</div>
+                                <div class="info">
+                                    <div class="name">Test User</div>
+                                    <div class="email">test@gmail.com</div>
+                                </div>
+                            </div>
+                            <div class="add-account" onclick="selectAccount('Yangi Foydalanuvchi', 'user@gmail.com')">
+                                <div class="add-icon">+</div>
+                                <span>Boshqa hisob qo'shish</span>
+                            </div>
+                        </div>
+                        
+                        <div id="loading" style="display:none">
+                            <div class="spinner"></div>
+                            <div class="loading-text">Kirilmoqda...</div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        function selectAccount(name, email) {
+                            document.getElementById('accounts').style.display = 'none';
+                            document.getElementById('loading').style.display = 'block';
+                            
+                            // Send message to parent window
+                            window.opener.postMessage({
+                                type: 'google-signin',
+                                user: { name, email }
+                            }, '*');
+                            
+                            // Close popup after 1 second
+                            setTimeout(() => {
+                                window.close();
+                            }, 1000);
+                        }
+                    </script>
+                </body>
+                </html>
+            `);
+        }
+        
+        return popup;
     }
 
     // Microsoft Sign-In (Demo)
