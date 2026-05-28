@@ -1,57 +1,70 @@
-// ===== DOM ELEMENTS =====
+// ==================== PROFESSIONAL LOGIN SYSTEM ====================
+
+// DOM Elements
 const loginForm = document.getElementById('loginForm');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const togglePasswordBtn = document.getElementById('togglePassword');
 const loginBtn = document.getElementById('loginBtn');
-const successMessage = document.getElementById('successMessage');
+const toast = document.getElementById('toast');
+const toastMessage = document.getElementById('toastMessage');
 const emailError = document.getElementById('emailError');
 const passwordError = document.getElementById('passwordError');
 
-// ===== PASSWORD TOGGLE =====
-let passwordVisible = false;
+// ==================== VALIDATION FUNCTIONS ====================
+
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validatePassword(password) {
+    return password.length >= 6;
+}
+
+function showError(errorElement, message) {
+    errorElement.textContent = message;
+    errorElement.parentElement.querySelector('input').classList.add('shake');
+    setTimeout(() => {
+        errorElement.parentElement.querySelector('input').classList.remove('shake');
+    }, 300);
+}
+
+function clearError(errorElement) {
+    errorElement.textContent = '';
+}
+
+function showToast(message, type = 'success') {
+    toastMessage.textContent = message;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// ==================== PASSWORD TOGGLE ====================
+
+let isPasswordVisible = false;
 
 togglePasswordBtn.addEventListener('click', () => {
-    passwordVisible = !passwordVisible;
+    isPasswordVisible = !isPasswordVisible;
     
-    if (passwordVisible) {
+    if (isPasswordVisible) {
         passwordInput.type = 'text';
         togglePasswordBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
     } else {
         passwordInput.type = 'password';
         togglePasswordBtn.innerHTML = '<i class="fas fa-eye"></i>';
     }
-    
-    // Animation effect
-    togglePasswordBtn.style.transform = 'translateY(-50%) scale(1.2)';
-    setTimeout(() => {
-        togglePasswordBtn.style.transform = 'translateY(-50%) scale(1)';
-    }, 200);
 });
 
-// ===== EMAIL VALIDATION =====
-function validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
+// ==================== REAL-TIME VALIDATION ====================
 
-function showError(element, message) {
-    element.textContent = message;
-    element.style.display = 'block';
-    
-    // Shake animation
-    element.parentElement.querySelector('input').style.animation = 'shake 0.3s ease';
-    setTimeout(() => {
-        element.parentElement.querySelector('input').style.animation = '';
-    }, 300);
-}
+emailInput.addEventListener('input', () => {
+    clearError(emailError);
+});
 
-function hideError(element) {
-    element.textContent = '';
-    element.style.display = 'none';
-}
-
-// Real-time email validation
 emailInput.addEventListener('blur', () => {
     const email = emailInput.value.trim();
     
@@ -59,46 +72,35 @@ emailInput.addEventListener('blur', () => {
         showError(emailError, 'Email manzilni kiriting');
     } else if (!validateEmail(email)) {
         showError(emailError, 'Noto\'g\'ri email format');
-    } else {
-        hideError(emailError);
-        emailInput.parentElement.querySelector('input').style.borderColor = 'rgba(16, 185, 129, 0.5)';
     }
 });
 
-emailInput.addEventListener('input', () => {
-    hideError(emailError);
-    emailInput.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+passwordInput.addEventListener('input', () => {
+    clearError(passwordError);
 });
 
-// Real-time password validation
 passwordInput.addEventListener('blur', () => {
     const password = passwordInput.value;
     
     if (!password) {
         showError(passwordError, 'Parolni kiriting');
-    } else if (password.length < 6) {
+    } else if (!validatePassword(password)) {
         showError(passwordError, 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak');
-    } else {
-        hideError(passwordError);
-        passwordInput.parentElement.querySelector('input').style.borderColor = 'rgba(16, 185, 129, 0.5)';
     }
 });
 
-passwordInput.addEventListener('input', () => {
-    hideError(passwordError);
-    passwordInput.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-});
+// ==================== FORM SUBMISSION ====================
 
-// ===== FORM SUBMISSION =====
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Reset errors
-    hideError(emailError);
-    hideError(passwordError);
+    // Clear previous errors
+    clearError(emailError);
+    clearError(passwordError);
     
     const email = emailInput.value.trim();
     const password = passwordInput.value;
+    
     let hasError = false;
     
     // Validate email
@@ -114,18 +116,12 @@ loginForm.addEventListener('submit', async (e) => {
     if (!password) {
         showError(passwordError, 'Parolni kiriting');
         hasError = true;
-    } else if (password.length < 6) {
+    } else if (!validatePassword(password)) {
         showError(passwordError, 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak');
         hasError = true;
     }
     
-    // If has error, stop
     if (hasError) {
-        // Shake the login button
-        loginBtn.style.animation = 'shake 0.3s ease';
-        setTimeout(() => {
-            loginBtn.style.animation = '';
-        }, 300);
         return;
     }
     
@@ -133,206 +129,105 @@ loginForm.addEventListener('submit', async (e) => {
     loginBtn.classList.add('loading');
     loginBtn.disabled = true;
     
-    // Simulate API call (2 seconds delay)
     try {
+        // Simulate API call
         await simulateLogin(email, password);
         
-        // Success!
-        showSuccessMessage();
+        // Success
+        showToast('Muvaffaqiyatli kirildi!');
         
-        // Reset form after success
+        // Save email if remember me is checked
+        const rememberCheckbox = document.getElementById('remember');
+        if (rememberCheckbox.checked) {
+            localStorage.setItem('rememberedEmail', email);
+        } else {
+            localStorage.removeItem('rememberedEmail');
+        }
+        
+        // Redirect after 1.5 seconds (in real app)
         setTimeout(() => {
-            loginForm.reset();
-            loginBtn.classList.remove('loading');
-            loginBtn.disabled = false;
-        }, 2000);
+            console.log('Redirecting to dashboard...');
+            // window.location.href = '/dashboard';
+        }, 1500);
         
     } catch (error) {
-        // Handle error
         showError(passwordError, 'Email yoki parol noto\'g\'ri');
-        loginBtn.classList.remove('loading');
-        loginBtn.disabled = false;
-        
-        // Shake effect
-        loginBtn.style.animation = 'shake 0.3s ease';
+        showToast('Kirish xato', 'error');
+    } finally {
         setTimeout(() => {
-            loginBtn.style.animation = '';
-        }, 300);
+            loginBtn.classList.remove('loading');
+            loginBtn.disabled = false;
+        }, 1500);
     }
 });
 
-// ===== SIMULATE LOGIN API =====
+// ==================== SIMULATE API CALL ====================
+
 function simulateLogin(email, password) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            // For demo: accept any email with password length >= 6
-            if (password.length >= 6) {
-                resolve({ success: true, user: { email } });
+            // Demo: accept any valid email and password >= 6 chars
+            if (validateEmail(email) && validatePassword(password)) {
+                resolve({ user: { email } });
             } else {
-                reject({ error: 'Invalid credentials' });
+                reject(new Error('Invalid credentials'));
             }
-        }, 2000);
+        }, 1500);
     });
 }
 
-// ===== SUCCESS MESSAGE =====
-function showSuccessMessage() {
-    successMessage.classList.add('show');
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-        successMessage.classList.remove('show');
-    }, 3000);
-}
+// ==================== SOCIAL LOGIN ====================
 
-// ===== SOCIAL LOGIN BUTTONS =====
-const socialButtons = document.querySelectorAll('.social-btn');
+const socialButtons = document.querySelectorAll('.btn-social');
 
 socialButtons.forEach(button => {
     button.addEventListener('click', (e) => {
         e.preventDefault();
         
-        const provider = button.classList.contains('google') ? 'Google' : 'GitHub';
-        
-        // Add loading animation
-        button.style.opacity = '0.7';
-        button.style.transform = 'scale(0.95)';
-        
-        // Simulate social login
-        setTimeout(() => {
-            button.style.opacity = '1';
-            button.style.transform = 'scale(1)';
-            
-            // Show message
-            alert(`${provider} orqali kirish tez orada qo'shiladi!`);
-        }, 300);
+        const provider = button.textContent.trim();
+        showToast(`${provider} orqali kirish tez orada qo'shiladi`, 'info');
     });
 });
 
-// ===== KEYBOARD SHORTCUTS =====
+// ==================== REMEMBER ME FUNCTIONALITY ====================
+
+window.addEventListener('DOMContentLoaded', () => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    
+    if (savedEmail) {
+        emailInput.value = savedEmail;
+        document.getElementById('remember').checked = true;
+    }
+    
+    // Auto-focus email input
+    setTimeout(() => {
+        emailInput.focus();
+    }, 300);
+});
+
+// ==================== KEYBOARD SHORTCUTS ====================
+
 document.addEventListener('keydown', (e) => {
-    // Enter key in any input focuses next or submits
+    // Enter on email field -> focus password
     if (e.key === 'Enter' && document.activeElement === emailInput) {
         e.preventDefault();
         passwordInput.focus();
     }
 });
 
-// ===== INPUT ANIMATIONS =====
-const inputs = document.querySelectorAll('input[type="email"], input[type="password"]');
+// ==================== PREVENT FORM RESUBMISSION ====================
 
-inputs.forEach(input => {
-    // Add focus animation
-    input.addEventListener('focus', () => {
-        input.parentElement.style.transform = 'scale(1.02)';
-        input.parentElement.style.transition = 'transform 0.2s ease';
-    });
-    
-    input.addEventListener('blur', () => {
-        input.parentElement.style.transform = 'scale(1)';
-    });
-});
-
-// ===== PREVENT COPY-PASTE FOR PASSWORD (OPTIONAL) =====
-// Uncomment if you want to prevent password copy-paste
-/*
-passwordInput.addEventListener('paste', (e) => {
-    e.preventDefault();
-    showError(passwordError, 'Parolni nusxalash mumkin emas');
-    setTimeout(() => hideError(passwordError), 2000);
-});
-*/
-
-// ===== AUTO-FOCUS ON LOAD =====
-window.addEventListener('load', () => {
-    // Add slight delay for better UX
-    setTimeout(() => {
-        emailInput.focus();
-    }, 600);
-});
-
-// ===== FORM FIELD AUTO-SAVE (Optional - using localStorage) =====
-const rememberCheckbox = document.getElementById('remember');
-
-// Load saved email if exists
-window.addEventListener('load', () => {
-    const savedEmail = localStorage.getItem('rememberedEmail');
-    if (savedEmail) {
-        emailInput.value = savedEmail;
-        rememberCheckbox.checked = true;
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
     }
 });
 
-// Save email on form submit if "Remember me" is checked
-loginForm.addEventListener('submit', () => {
-    if (rememberCheckbox.checked) {
-        localStorage.setItem('rememberedEmail', emailInput.value.trim());
-    } else {
-        localStorage.removeItem('rememberedEmail');
-    }
-});
+// ==================== CONSOLE INFO ====================
 
-// ===== FORGOT PASSWORD LINK =====
-const forgotLink = document.querySelector('.forgot-link');
-
-forgotLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    // Add animation
-    forgotLink.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        forgotLink.style.transform = 'scale(1)';
-    }, 100);
-    
-    // Show alert (in real app, would open modal or redirect)
-    alert('Parolni tiklash funksiyasi tez orada qo\'shiladi!\n\nEmail manzilingizga link yuboriladi.');
-});
-
-// ===== SIGNUP LINK =====
-const signupLink = document.querySelector('.signup-link');
-
-signupLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    // Add animation
-    signupLink.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        signupLink.style.transform = 'scale(1)';
-    }, 100);
-    
-    // Show alert (in real app, would redirect to signup page)
-    alert('Ro\'yxatdan o\'tish sahifasiga yo\'naltirilmoqda...');
-});
-
-// ===== CONSOLE WELCOME MESSAGE =====
-console.log('%c🔐 Professional Login Page', 'color: #6366f1; font-size: 20px; font-weight: bold;');
-console.log('%cCreated with ❤️ using HTML, CSS & JavaScript', 'color: #ec4899; font-size: 14px;');
-console.log('%c\nFeatures:\n- Glass morphism design\n- Smooth animations\n- Form validation\n- Responsive layout\n- Password toggle\n- Remember me functionality', 'color: #10b981; font-size: 12px;');
-
-// ===== EASTER EGG: Konami Code =====
-let konamiCode = [];
-const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-
-document.addEventListener('keydown', (e) => {
-    konamiCode.push(e.key);
-    konamiCode = konamiCode.slice(-10);
-    
-    if (konamiCode.join(',') === konamiSequence.join(',')) {
-        // Easter egg activated!
-        document.body.style.animation = 'rainbow 2s ease infinite';
-        setTimeout(() => {
-            document.body.style.animation = '';
-            alert('🎉 Easter egg topildi! Siz maxfiy kodni topdingiz!');
-        }, 2000);
-    }
-});
-
-// Rainbow animation for easter egg
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes rainbow {
-        0% { filter: hue-rotate(0deg); }
-        100% { filter: hue-rotate(360deg); }
-    }
-`;
-document.head.appendChild(style);
+console.log('%c🔐 eHisobot Login System', 'color: #2563eb; font-size: 18px; font-weight: bold;');
+console.log('%cProfessional Business Login Interface', 'color: #64748b; font-size: 12px;');
+console.log('%c\nDemo Credentials:', 'color: #10b981; font-size: 14px; font-weight: bold;');
+console.log('Email: any valid email format');
+console.log('Password: minimum 6 characters');
